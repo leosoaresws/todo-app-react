@@ -6,6 +6,7 @@ import TodoForm from './todoForm'
 import TodoList from './todoList'
 
 const URL = 'http://localhost:3003/api/todos'
+// const URL = 'http://192.168.1.102:3003/api/todos'
 
 export default class Todo extends Component {
     
@@ -15,6 +16,10 @@ export default class Todo extends Component {
 
         this.handleAdd = this.handleAdd.bind(this)
         this.handleChange = this.handleChange.bind(this)
+        
+        this.handleMarkAsDone = this.handleMarkAsDone.bind(this)
+        this.handleMarkAsPending = this.handleMarkAsPending.bind(this)
+        this.toogleDone = this.toogleDone.bind(this)
         this.handleRemove = this.handleRemove.bind(this)
 
         this.refresh()
@@ -30,6 +35,10 @@ export default class Todo extends Component {
         )
     }
 
+    handleChange(e) {
+        this.setState({...this.state, description: e.target.value })
+    }
+
     handleAdd() {
         const description = this.state.description
         axios.post(URL, {description}).then(
@@ -37,13 +46,29 @@ export default class Todo extends Component {
         )
     }
 
-    handleChange(e) {
-        this.setState({...this.state, description: e.target.value })
-    }
-
     handleRemove(todo) {
         axios.delete(`${URL}/${todo._id}`)
             .then(resp => this.refresh())
+    }
+
+    handleMarkAsDone(todo) {
+        axios.put(`${URL}/${todo._id}`, { ...todo, done: true })
+            .then(resp => this.refresh());
+    }
+
+    handleMarkAsPending(todo) {
+        axios.put(`${URL}/${todo._id}`, { ...todo, done: false })
+            .then(resp => this.refresh());
+    }
+
+    toogleDone(todo) {
+        if(todo.done) {
+            axios.put(`${URL}/${todo._id}`, { ...todo, done: false })
+                .then(resp => this.refresh());
+        } else {
+            axios.put(`${URL}/${todo._id}`, { ...todo, done: true })
+                .then(resp => this.refresh());
+        }
     }
 
     render() {
@@ -54,6 +79,9 @@ export default class Todo extends Component {
                     handleChange={this.handleChange}
                     handleAdd={this.handleAdd}/>
                 <TodoList list={this.state.list}
+                    toogleDone={this.toogleDone}
+                    handleMarkAsDone={this.handleMarkAsDone}
+                    handleMarkAsPending={this.handleMarkAsPending}
                     handleRemove={this.handleRemove}/>
             </div>
         )
